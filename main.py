@@ -39,7 +39,7 @@ class FileOrganizer(QMainWindow):
                     shutil.move(str(item), replayFolder / item.name)
                 elif item.suffix.lower() == ".osk": #skin files
                     shutil.move(str(item), skinFolder / item.name)
-                elif item.suffix.lower() == ".osz":
+                elif item.suffix.lower() == ".osz": #song files
                     shutil.move(str(item), songFolder / item.name) 
         
         self.file_list.clear()
