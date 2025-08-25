@@ -34,12 +34,14 @@ class FileOrganizer(QMainWindow):
         songFolder = osuFolder / "Song"
         
         videoFolder = path / "Video"
+        docsFolder = path / "Documents"
         
         replayFolder.mkdir(parents=True, exist_ok=True)
         skinFolder.mkdir(parents=True, exist_ok=True)
         songFolder.mkdir(parents=True, exist_ok=True)
         
         videoFolder.mkdir(parents=True, exist_ok=True)
+        docsFolder.mkdir(parents=True, exist_ok=True)
         
         for item in path.iterdir():
             if item.is_file():
@@ -52,9 +54,12 @@ class FileOrganizer(QMainWindow):
                 elif item.suffix.lower() == ".osz": #song files
                     shutil.move(str(item), songFolder / item.name)
                     self.logArea.append(f"Moved {item.name} -> Song")
-                elif item.suffix.lower() in [".mov", ".mp4"]:
+                elif item.suffix.lower() in [".mov", ".mp4"]: #video files
                     shutil.move(str(item), videoFolder / item.name)
                     self.logArea.append(f"Moved {item.name} -> Video")
+                elif item.suffix.lower() in [".pdf", ".md"]: #document files
+                    shutil.move(str(item), docsFolder / item.name)
+                    self.logArea.append(f"Moved {item.name} -> Documents")
         
         self.file_list.clear()
 
