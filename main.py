@@ -1,7 +1,8 @@
 import sys
-from pathlib import Path
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget
 import qdarktheme
+import shutil
+from pathlib import Path
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton
 
 class FileOrganizer(QMainWindow):
     def __init__(self):
@@ -13,19 +14,37 @@ class FileOrganizer(QMainWindow):
         self.file_list = QListWidget()
         layout.addWidget(self.file_list)
         
+        self.osuButton = QPushButton("Sort osu files")
+        self.osuButton.clicked.connect(self.sortOsuFiles)
+        layout.addWidget(self.osuButton)
+        
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
-        
-        self.loadDownloads()
-    
-    def loadDownloads(self):
+
+    def sortOsuFiles(self):
         path = Path.home() / "Downloads"
-        if path.exists():
-            for item in path.iterdir():
-                self.file_list.addItem(str(item.name))
-        else:
-            self.file_list.addItem("Downloads folder not found!")
+        osuFolder = path / "osu"
+        replayFolder = osuFolder / "Replay"
+        skinFolder = osuFolder / "Skin"
+        songFolder = osuFolder / "Song"
+        
+        replayFolder.mkdir(parents=True, exist_ok=True)
+        skinFolder.mkdir(parents=True, exist_ok=True)
+        songFolder.mkdir(parents=True, exist_ok=True)
+        
+        for item in path.iterdir():
+            if item.is_file():
+                if item.suffix.lower() == ".osr": #replay files
+                    shutil.move(str(item), replayFolder / item.name)
+                elif item.suffix.lower() == ".osk": #skin files
+                    shutil.move(str(item), skinFolder / item.name)
+                elif item.suffix.lower() == ".osz":
+                    shutil.move(str(item), songFolder / item.name) 
+        
+        self.file_list.clear()
+        for item in path.iterdir():
+            self.file_list.addItem(str(item.name))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
