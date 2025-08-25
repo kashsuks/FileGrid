@@ -43,8 +43,6 @@ class FileOrganizer(QMainWindow):
                     shutil.move(str(item), songFolder / item.name) 
         
         self.file_list.clear()
-        for item in path.iterdir():
-            self.file_list.addItem(str(item.name))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
