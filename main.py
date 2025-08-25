@@ -14,15 +14,15 @@ class FileOrganizer(QMainWindow):
         self.file_list = QListWidget()
         layout.addWidget(self.file_list)
         
-        self.osuButton = QPushButton("Sort osu files")
-        self.osuButton.clicked.connect(self.sortOsuFiles)
-        layout.addWidget(self.osuButton)
+        self.sortButon = QPushButton("Sort Files")
+        self.sortButton.clicked.connect(self.sortFiles)
+        layout.addWidget(self.sortButton)
         
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
 
-    def sortOsuFiles(self):
+    def sortFiles(self):
         path = Path.home() / "Downloads"
         osuFolder = path / "osu"
         replayFolder = osuFolder / "Replay"
