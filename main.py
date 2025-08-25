@@ -2,7 +2,7 @@ import sys
 import qdarktheme
 import shutil
 from pathlib import Path
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton, QTextEdit
 
 class FileOrganizer(QMainWindow):
     def __init__(self):
@@ -12,7 +12,6 @@ class FileOrganizer(QMainWindow):
         
         layout = QVBoxLayout()
         self.file_list = QListWidget()
-        layout.addWidget(self.file_list)
         
         self.sortButton = QPushButton("Sort Files")
         self.sortButton.clicked.connect(self.sortFiles)
@@ -21,6 +20,10 @@ class FileOrganizer(QMainWindow):
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+        
+        self.logArea = QTextEdit()
+        self.logArea.setReadOnly(True)
+        layout.addWidget(self.logArea)
 
     def sortFiles(self):
         path = Path.home() / "Downloads"
@@ -42,12 +45,16 @@ class FileOrganizer(QMainWindow):
             if item.is_file():
                 if item.suffix.lower() == ".osr": #replay files
                     shutil.move(str(item), replayFolder / item.name)
+                    self.logArea.append(f"Moved {item.name} -> Replay")
                 elif item.suffix.lower() == ".osk": #skin files
                     shutil.move(str(item), skinFolder / item.name)
+                    self.logArea.append(f"Moved {item.name} -> Skin")
                 elif item.suffix.lower() == ".osz": #song files
-                    shutil.move(str(item), songFolder / item.name) 
+                    shutil.move(str(item), songFolder / item.name)
+                    self.logArea.append(f"Moved {item.name} -> Song")
                 elif item.suffix.lower() in [".mov", ".mp4"]:
                     shutil.move(str(item), videoFolder / item.name)
+                    self.logArea.append(f"Moved {item.name} -> Video")
         
         self.file_list.clear()
 
