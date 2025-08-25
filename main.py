@@ -14,7 +14,7 @@ class FileOrganizer(QMainWindow):
         self.file_list = QListWidget()
         layout.addWidget(self.file_list)
         
-        self.sortButon = QPushButton("Sort Files")
+        self.sortButton = QPushButton("Sort Files")
         self.sortButton.clicked.connect(self.sortFiles)
         layout.addWidget(self.sortButton)
         
@@ -24,14 +24,19 @@ class FileOrganizer(QMainWindow):
 
     def sortFiles(self):
         path = Path.home() / "Downloads"
+        
         osuFolder = path / "osu"
         replayFolder = osuFolder / "Replay"
         skinFolder = osuFolder / "Skin"
         songFolder = osuFolder / "Song"
         
+        videoFolder = path / "Video"
+        
         replayFolder.mkdir(parents=True, exist_ok=True)
         skinFolder.mkdir(parents=True, exist_ok=True)
         songFolder.mkdir(parents=True, exist_ok=True)
+        
+        videoFolder.mkdir(parents=True, exist_ok=True)
         
         for item in path.iterdir():
             if item.is_file():
@@ -41,6 +46,8 @@ class FileOrganizer(QMainWindow):
                     shutil.move(str(item), skinFolder / item.name)
                 elif item.suffix.lower() == ".osz": #song files
                     shutil.move(str(item), songFolder / item.name) 
+                elif item.suffix.lower() in [".mov", ".mp4"]:
+                    shutil.move(str(item), videoFolder / item.name)
         
         self.file_list.clear()
 
