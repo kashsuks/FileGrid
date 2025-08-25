@@ -1,6 +1,7 @@
 import sys
 import qdarktheme
 import shutil
+import re
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton, QTextEdit
 
@@ -24,6 +25,9 @@ class FileOrganizer(QMainWindow):
         self.logArea = QTextEdit()
         self.logArea.setReadOnly(True)
         layout.addWidget(self.logArea)
+        
+    def cleanFilename(self, name: str) -> str:
+        return re.sub(r"\s*\(\d\)$", "", name)
 
     def sortFiles(self):
         path = Path.home() / "Downloads"
@@ -46,20 +50,74 @@ class FileOrganizer(QMainWindow):
         for item in path.iterdir():
             if item.is_file():
                 if item.suffix.lower() == ".osr": #replay files
-                    shutil.move(str(item), replayFolder / item.name)
-                    self.logArea.append(f"Moved {item.name} -> Replay")
+                    target = replayFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target / cleanName
+                    
+                    if dest.exists(): #if the non duplicate version already exists
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else: #if there is no non-duplicate versiom
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Replay")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Replay")
+                            
                 elif item.suffix.lower() == ".osk": #skin files
-                    shutil.move(str(item), skinFolder / item.name)
-                    self.logArea.append(f"Moved {item.name} -> Skin")
+                    target = skinFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target / cleanName
+                    
+                    if dest.exists(): #if non duplicate exists
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else: #if only ducplicates exist
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Skin")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Skin")
                 elif item.suffix.lower() == ".osz": #song files
-                    shutil.move(str(item), songFolder / item.name)
-                    self.logArea.append(f"Moved {item.name} -> Song")
+                    target = songFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target / cleanName
+                    
+                    if dest.exists(): #if original exists
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else: #only duplicates exist
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Song")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Song")
                 elif item.suffix.lower() in [".mov", ".mp4"]: #video files
-                    shutil.move(str(item), videoFolder / item.name)
-                    self.logArea.append(f"Moved {item.name} -> Video")
+                    target = videoFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target /cleanName
+                    
+                    if dest.exists():
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else:
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Video")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Video")
                 elif item.suffix.lower() in [".pdf", ".md"]: #document files
-                    shutil.move(str(item), docsFolder / item.name)
-                    self.logArea.append(f"Moved {item.name} -> Documents")
+                    target = docsFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target / cleanName
+                    
+                    if dest.exists():
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else:
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Documents")
         
         self.file_list.clear()
 
