@@ -39,6 +39,7 @@ class FileOrganizer(QMainWindow):
         
         videoFolder = path / "Video"
         docsFolder = path / "Documents"
+        zipFolder = path / "Zips"
         
         replayFolder.mkdir(parents=True, exist_ok=True)
         skinFolder.mkdir(parents=True, exist_ok=True)
@@ -46,6 +47,7 @@ class FileOrganizer(QMainWindow):
         
         videoFolder.mkdir(parents=True, exist_ok=True)
         docsFolder.mkdir(parents=True, exist_ok=True)
+        zipFolder.mkdir(parents=True, exist_ok=True)
         
         for item in path.iterdir():
             if item.is_file():
@@ -118,6 +120,22 @@ class FileOrganizer(QMainWindow):
                         shutil.move(str(item), dest)
                         if cleanName != item.name:
                             self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Documents")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Documents")
+                elif item.suffix.lower() == ".zip":
+                    target = zipFolder
+                    cleanName = self.cleanFilename(item.stem) + item.suffix
+                    dest = target / cleanName
+                    
+                    if dest.exists():
+                        item.unlink
+                        self.logArea.append(f"Deleted duplicate {item.name}, kept {cleanName}")
+                    else:
+                        shutil.move(str(item), dest)
+                        if cleanName != item.name:
+                            self.logArea.append(f"Renamed {item.name} -> {cleanName} and moved to Zip")
+                        else:
+                            self.logArea.append(f"Moved {cleanName} -> Zip")
         
         self.file_list.clear()
 
