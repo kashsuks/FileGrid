@@ -2,8 +2,11 @@ import sys
 import qdarktheme
 import shutil
 import re
+import time
+
 from pathlib import Path
-from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton, QTextEdit
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton, QTextEdit, QMessageBox
+from features.dragdrop import DragDropList
 
 class FileOrganizer(QMainWindow):
     def __init__(self):
@@ -26,13 +29,9 @@ class FileOrganizer(QMainWindow):
         self.logArea.setReadOnly(True)
         layout.addWidget(self.logArea)
 
-    def cleanFilename(self, name: str) -> str:
-        return re.sub(r"\s*\(\d\)$", "", name)
-
-    def sortFiles(self):
+        # define folders ONCE and reuse
         downloadsPath = Path.home() / "Downloads"
-
-        folders = {
+        self.folders = {
             "Replay": (downloadsPath / "osu" / "Replay", [".osr"]),
             "Skin": (downloadsPath / "osu" / "Skin", [".osk"]),
             "Song": (downloadsPath / "osu" / "Song", [".osz"]),
@@ -43,13 +42,25 @@ class FileOrganizer(QMainWindow):
             "Applications": (downloadsPath / "Applications", [".app", ".dmg", ".exe"]),
         }
 
-        for folderPath, _ in folders.values():
+        self.dragDropList = DragDropList(self.logArea, self.folders)
+        layout.addWidget(self.dragDropList)
+
+    def cleanFilename(self, name: str) -> str:
+        return re.sub(r"\s*\(\d\)$", "", name)
+
+    def sortFiles(self):
+        daysInSeconds = 30 * 24 * 60 * 60
+        downloadsPath = Path.home() / "Downloads"
+
+        for folderPath, _ in self.folders.values():
             folderPath.mkdir(parents=True, exist_ok=True)
 
         for item in downloadsPath.iterdir():
             targetFolder = None
-            for folderName, (folderPath, extensions) in folders.items():
-                if (item.suffix.lower() in extensions) or (item.is_dir() and ".app" in extensions and item.suffix.lower() == ".app"):
+            for folderName, (folderPath, extensions) in self.folders.items():
+                if (item.suffix.lower() in extensions) or (
+                    item.is_dir() and ".app" in extensions and item.suffix.lower() == ".app"
+                ):
                     targetFolder = folderPath
                     break
 
@@ -59,7 +70,28 @@ class FileOrganizer(QMainWindow):
             cleanName = self.cleanFilename(item.stem) + item.suffix
             dest = targetFolder / cleanName
 
+            fileAge = time.time() - item.stat().st_ctime
+
             if dest.exists():
+                if fileAge > daysInSeconds:
+                    reply = QMessageBox.question(
+                        self,
+                        "Old file detected",
+                        f"{item.name} is over 30 days old. Do you want to delete it?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    )
+
+                    if reply == QMessageBox.StandardButton.Yes:
+                        if item.is_file():
+                            item.unlink()
+                        else:
+                            shutil.rmtree(item)
+                        self.logArea.append(f"Deleted old file {item.name}, kept {cleanName}")
+                        continue
+                    else:
+                        self.logArea.append(f"Kept old file {item.name}")
+                        continue
+
                 if item.is_file():
                     item.unlink()
                 else:
@@ -74,7 +106,6 @@ class FileOrganizer(QMainWindow):
 
         self.fileList.clear()
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
@@ -83,4 +114,4 @@ if __name__ == "__main__":
 
     window = FileOrganizer()
     window.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec()) 
