@@ -31,7 +31,7 @@ class DragDropList(QListWidget):
                     self.addItem(str(path.name))  # show filename in list
                     self.logArea.append(f"Dropped: {path.name}")
 
-                    # auto-move to correct folder
+                    # auto move to correct folder
                     moved = False
                     for folderName, (folderPath, extensions) in self.folders.items():
                         if path.suffix.lower() in extensions:
