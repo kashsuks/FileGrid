@@ -37,3 +37,11 @@ python main.py
 ## Installation Guide
 
 In order to install FileGrid, head over to the [releases page](https://github.com/kashsuks/FileGrid/releases) and click on the latest release. After that, download the binary for whichever Operating System you use.
+
+### MacOS
+
+Double click on the executable file and it will run!
+
+### Windows 64
+
+Double click on the executable file and it will run!
